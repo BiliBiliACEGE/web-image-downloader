@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>原图下载器 - 设置</title>
+    <link rel="stylesheet" href="styles/options.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <img src="../icons/48.png" alt="Logo" class="logo">
+                <h1 class="title">原图下载器设置</h1>
+            </div>
+        </header>
+        
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="general">常规设置</button>
+            <button class="nav-tab" data-tab="rules">规则设置</button>
+            <button class="nav-tab" data-tab="advanced">高级设置</button>
+            <button class="nav-tab" data-tab="about">关于</button>
+        </nav>
+        
+        <main class="main">
+            <!-- 常规设置 -->
+            <div id="general" class="tab-content active">
+                <section class="section">
+                    <h2 class="section-title">下载设置</h2>
+                    
+                    <div class="form-group" id="customNamingGroup" >
+                        <label class="form-label">下载模式</label>
+                        <select id="downloadMode" class="form-select">
+                            <option value="direct">直接下载</option>
+                            <option value="newTab">新标签页打开</option>
+                            <option value="batch">批量下载</option>
+                            <option value="copy">复制链接</option>
+                        </select>
+                        <p class="form-help">选择图片下载的方式</p>
+                    </div>
+                    
+                    <div class="form-group" id="customNamingGroup" >
+                        <label class="form-label">文件名模板</label>
+                        <input type="text" id="fileNameTemplate" class="form-input" placeholder="{original}">
+                        <p class="form-help">可用变量: {original} - 原始文件名, {timestamp} - 时间戳, {domain} - 域名</p>
+                    </div>
+                    
+                    <div class="form-group" id="customNamingGroup" >
+                        <label class="form-label">文件名最大长度</label>
+                        <input type="number" id="maxFileNameLength" class="form-input" min="10" max="255" value="50">
+                        <p class="form-help">超出长度的文件名将被截断</p>
+                    </div>
+                    <!-- 命名模式 -->
+                    <div class="form-group">
+                    <label class="form-label">命名模式</label>
+                    <select id="namingPattern" class="form-select">
+                        <option value="original">原始文件名</option>
+                        <option value="timestamp">时间戳</option>
+                        <option value="domain">域名+序号</option>
+                        <option value="custom">自定义</option>
+                    </select>
+                    </div>
+                </section>
+                
+                <section class="section">
+                    <h2 class="section-title">界面设置</h2>
+                    
+                    <div class="form-group" id="customNamingGroup" >
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="showNotifications">
+                            <span class="checkmark"></span>
+                            显示下载通知
+                        </label>
+                    </div>
+                    
+                    <div class="form-group" id="customNamingGroup" >
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="enableContextMenu">
+                            <span class="checkmark"></span>
+                            启用右键菜单
+                        </label>
+                    </div>
+                    
+                    <div class="form-group" id="customNamingGroup" >
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="autoCloseTab">
+                            <span class="checkmark"></span>
+                            下载后自动关闭标签页
+                        </label>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- 规则设置 -->
+            <div id="rules" class="tab-content">
+                <section class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">网站规则</h2>
+                        <button id="addRule" class="btn btn-primary">添加规则</button>
+                    </div>
+                    <div id="rulesContainer"></div>
+                    <div id="rulesList" class="rules-list">
+                        <!-- 规则列表将在这里动态生成 -->
+                    </div>
+                </section>
+                
+                <section class="section">
+                    <h2 class="section-title">规则测试</h2>
+                    <div class="test-area">
+                        <div class="form-group" id="customNamingGroup" >
+                            <label class="form-label">测试URL</label>
+                            <input type="text" id="testUrl" class="form-input" placeholder="输入要测试的图片URL">
+                        </div>
+                        <div class="form-group" id="customNamingGroup" >
+                            <label class="form-label">页面URL（可选）</label>
+                            <input type="text" id="testPageUrl" class="form-input" placeholder="输入页面URL">
+                        </div>
+                        <button id="testRule" class="btn btn-secondary">测试规则</button>
+                        <div id="testResult" class="test-result"></div>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- 高级设置 -->
+            <div id="advanced" class="tab-content">
+                <section class="section">
+                    <h2 class="section-title">高级选项</h2>
+                    
+                    <div class="form-group" id="customNamingGroup" >
+                        <label class="form-label">并发下载数</label>
+                        <input type="number" id="concurrentDownloads" class="form-input" min="1" max="10" value="3">
+                        <p class="form-help">批量下载时的并发数量</p>
+                    </div>
+                    
+                    <div class="form-group" id="customNamingGroup" >
+                        <label class="form-label">下载延迟（毫秒）</label>
+                        <input type="number" id="downloadDelay" class="form-input" min="0" max="5000" value="500">
+                        <p class="form-help">批量下载时图片之间的下载间隔</p>
+                    </div>
+                    
+                    <div class="form-group" id="customNamingGroup" >
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="enableReferrer">
+                            <span class="checkmark"></span>
+                            发送Referrer头
+                        </label>
+                    </div>
+                    
+                    <div class="form-group" id="customNamingGroup" >
+                        <label class="form-checkbox">
+                            <input type="checkbox" id="enableCustomHeaders">
+                            <span class="checkmark"></span>
+                            启用自定义请求头
+                        </label>
+                    </div>
+                    
+                    <div id="customHeaders" class="custom-headers" style="display: none;">
+                        <div class="form-group" id="customNamingGroup" >
+                            <label class="form-label">自定义请求头（JSON格式）</label>
+                            <textarea id="headersJson" class="form-textarea" rows="5" placeholder='{"User-Agent": "Mozilla/5.0..."}'></textarea>
+                        </div>
+                    </div>
+                </section>
+                
+                <section class="section">
+                    <h2 class="section-title">数据管理</h2>
+                    
+                    <div class="form-group" id="customNamingGroup" >
+                        <button id="exportSettings" class="btn btn-secondary">导出设置</button>
+                        <button id="importSettings" class="btn btn-secondary">导入设置</button>
+                        <input type="file" id="importFile" accept=".json" style="display: none;">
+                    </div>
+                    
+                    <div class="form-group" id="customNamingGroup" >
+                        <button id="resetSettings" class="btn btn-danger">重置所有设置</button>
+                        <button id="clearHistory" class="btn btn-danger">清除下载历史</button>
+                    </div>
+                </section>
+            </div>
+            
+            <!-- 关于 -->
+            <div id="about" class="tab-content">
+                <section class="section">
+                    <div class="about-content">
+                        <img src="../icons/128.png" alt="Logo" class="about-logo">
+                        <h2>原图下载器</h2>
+                        <p class="version">版本 1.0.0</p>
+                        <p class="description">智能识别并下载网页图片原图的工具</p>
+                        
+                        <div class="features">
+                            <h3>主要功能</h3>
+                            <ul>
+                                <li>🎯 智能识别各大网站的图片压缩规则</li>
+                                <li>⚡ 支持多种下载方式</li>
+                                <li>🎨 美观易用的设置界面</li>
+                                <li>🔧 高度自定义的规则系统</li>
+                                <li>📊 下载统计和历史记录</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="links">
+                            <a href="#" id="helpLink">使用帮助</a>
+                            <a href="#" id="feedbackLink">反馈问题</a>
+                            <a href="#" id="rateLink">给我们评分</a>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+        
+        <footer class="footer">
+            <div class="footer-actions">
+                <button id="saveSettings" class="btn btn-primary">保存设置</button>
+                <button id="cancelSettings" class="btn btn-secondary">取消</button>
+            </div>
+        </footer>
+    </div>
+    
+    <script src="options.js"></script>
+</body>
+</html>

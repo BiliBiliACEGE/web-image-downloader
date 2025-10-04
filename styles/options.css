@@ -1,0 +1,225 @@
+/* options.css  2025-06  无依赖、现代浅色主题 */
+:root{
+  --bg:#f6f8fa;
+  --card:#ffffff;
+  --primary:#0f6cbd;
+  --danger:#d13438;
+  --text:#242424;
+  --text-secondary:#5a5a5a;
+  --border:#e0e0e0;
+  --radius:8px;
+  --shadow:0 2px 6px rgba(0,0,0,.08);
+  --font:14px/1.4 "Segoe UI",system-ui,sans-serif;
+}
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font:var(--font);
+  padding:24px;
+}
+.container{
+  max-width:840px;
+  margin:auto;
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+}
+/* 顶部 */
+.header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.header .logo{
+  width:32px;height:32px;
+}
+.header .title{
+  font-size:20px;font-weight:600;
+}
+/* 标签栏 */
+.nav-tabs{
+  display:flex;
+  gap:4px;
+  border-bottom:1px solid var(--border);
+}
+.nav-tab{
+  background:none;border:none;
+  padding:8px 16px;
+  cursor:pointer;
+  color:var(--text-secondary);
+  font-weight:500;
+  border-radius:var(--radius) var(--radius) 0 0;
+  transition:background .2s;
+}
+.nav-tab.active,
+.nav-tab:hover{
+  background:var(--card);
+  color:var(--primary);
+}
+/* 内容区 */
+.main{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:24px;
+}
+.tab-content{
+  display:none;
+}
+.tab-content.active{
+  display:block;
+}
+/* 卡片 */
+.section+.section{
+  margin-top:32px;
+}
+.section-title{
+  font-size:18px;margin-bottom:16px;font-weight:600;
+}
+/* 表单 */
+.form-group{
+  margin-bottom:16px;
+}
+.form-label{
+  display:block;margin-bottom:6px;font-weight:500;
+}
+.form-control,
+.form-input,
+.form-select{
+  width:100%;
+  padding:8px 12px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  font-size:14px;
+  transition:border .2s;
+}
+.form-control:focus,
+.form-input:focus,
+.form-select:focus{
+  border-color:var(--primary);
+  outline:none;
+}
+textarea.form-control{
+  resize:vertical;min-height:80px;
+}
+/* 复选框 */
+.checkbox-label{
+  display:flex;align-items:center;gap:8px;
+  cursor:pointer;
+  user-select:none;
+}
+input[type=checkbox]{
+  accent-color:var(--primary);
+}
+/* 按钮 */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 16px;
+  border:none;border-radius:var(--radius);
+  font-size:14px;font-weight:500;
+  cursor:pointer;transition:background .2s;
+}
+.btn-primary{
+  background:var(--primary);color:#fff;
+}
+.btn-primary:hover{
+  background:#0a4ea0;
+}
+.btn-secondary{
+  background:var(--border);color:var(--text);
+}
+.btn-secondary:hover{
+  background:#d0d0d0;
+}
+.btn-danger{
+  background:var(--danger);color:#fff;
+}
+.btn-danger:hover{
+  background:#b02a2f;
+}
+.btn-text{
+  background:none;color:var(--primary);
+}
+/* 规则列表 */
+.rules-toolbar{
+  display:flex;gap:8px;margin-bottom:16px;
+}
+.rule-card{
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:16px;margin-bottom:12px;
+}
+.rule-header{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:8px;
+}
+.domain{
+  font-weight:600;
+}
+.rule-item{
+  display:flex;align-items:center;gap:8px;
+  font-size:13px;
+  margin-top:6px;
+}
+.rule-item code{
+  background:#f4f4f4;padding:2px 4px;border-radius:4px;
+}
+.arrow{
+  color:var(--text-secondary);
+}
+/* 规则编辑器 */
+.rule-editor{
+  background:#fafafa;
+  border:1px dashed var(--border);
+  border-radius:var(--radius);
+  padding:20px;margin-top:16px;
+}
+.form-actions{
+  display:flex;gap:8px;justify-content:flex-end;margin-top:16px;
+}
+/* 测试区 */
+.test-result{
+  background:#f4f4f4;
+  border-left:4px solid var(--primary);
+  padding:12px 16px;
+  margin-top:12px;
+  border-radius:0 var(--radius) var(--radius) 0;
+}
+.result-item{
+  display:flex;gap:8px;margin-bottom:4px;
+}
+.result-label{
+  font-weight:600;
+}
+/* 预设 */
+.preset-rules{
+  display:flex;flex-direction:column;gap:8px;
+}
+.preset-item{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 12px;
+  background:var(--bg);
+  border-radius:var(--radius);
+}
+/* Toast */
+.toast{
+  position:fixed;
+  bottom:24px;left:50%;
+  transform:translateX(-50%);
+  background:var(--text);
+  color:#fff;
+  padding:10px 18px;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  font-size:14px;
+  z-index:1000;
+  opacity:0;
+  animation:fade .3s forwards;
+}
+@keyframes fade{to{opacity:1;}}
