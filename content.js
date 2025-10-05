@@ -1,8 +1,9 @@
 // 监听来自后台脚本的消息
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === 'getAllImages') {
-    const images = Array.from(document.images).map(img => img.src);
-    sendResponse({ images: images });
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.action === 'getAllImages') {
+    const imgs = Array.from(document.images).map(i => i.src).filter(Boolean);
+    sendResponse({images: imgs});
+    return true; // 保持通道开放
   }
 });
 

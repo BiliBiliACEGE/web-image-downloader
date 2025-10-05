@@ -27,7 +27,11 @@
       "32": "icons/32.png",
       "48": "icons/48.png",
       "128": "icons/128.png"
-    }
+    },
+  "web_accessible_resources": [{
+  "resources": ["libs/jszip.min.js"],
+  "matches": ["<all_urls>"]
+  }]
   },
   "options_page": "options.html",
   "icons": {
