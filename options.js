@@ -1,62 +1,63 @@
-/* options.js  2025-06-25  无语法错误版  Manifest V3 */
-
-// --------------------  默认配置  --------------------
 const DEFAULT_SETTINGS = {
-  enableExtension:      true,
-  enableContextMenu:    true,
-  showNotifications:    true,
-  enableBatchDownload:  true,
-  downloadMode:        'auto',          // single / batch / auto
-  maxBatchSize:        10,
-  downloadDelay:       500,
-  namingPattern:       'original',      // original / timestamp / domain / custom
-  customNaming:        '{domain}_{timestamp}_{index}',
-  addTimestamp:        false,
-  savePath:            '',
-  createFolder:        true,
-  createDateFolder:    false,
-  minWidth:            100,
-  minHeight:           100,
-  maxSize:             50,
-  allowedFormats:      ['jpg', 'jpeg', 'png', 'gif', 'webp']
+  enableExtension: true,
+  enableContextMenu: true,
+  showNotifications: true,
+  enableBatchDownload: true,
+  downloadMode: 'auto',
+  maxBatchSize: 10,
+  downloadDelay: 500,
+  namingPattern: 'original',
+  customNaming: '{domain}_{timestamp}_{index}',
+  addTimestamp: false,
+  savePath: '',
+  createFolder: true,
+  createDateFolder: false,
+  minWidth: 100,
+  minHeight: 100,
+  maxSize: 50,
+  allowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+  language: 'auto'
 };
 
 const DEFAULT_RULES = {
   'bilibili.com': [
-    { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))@[^?]+(?:\\?.*)?$', replacement: '$1', desc: '移除B站参数' },
-    { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))[?].*$',           replacement: '$1', desc: '移除查询串' }
+    { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))@[^?]+(?:\\?.*)?$', replacement: '$1', descKey: 'optDescBili' },
+    { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))[?].*$',           replacement: '$1', descKey: 'optDescDef2' }
   ],
   'weibo.com': [
-    { pattern: '\\/thumbnail$', replacement: '',        desc: '去掉 thumbnail' },
-    { pattern: '\\/small$',     replacement: '/large', desc: '换成 large' }
+    { pattern: '\\/thumbnail$', replacement: '',        descKey: 'optDescWeibo' },
+    { pattern: '\\/small$',     replacement: '/large', descKey: 'optDescWeibo2' }
   ],
   'zhihu.com': [
-    { pattern: '_([sm]|xs|md|lg)$', replacement: '', desc: '去掉知乎尺寸后缀' }
+    { pattern: '_([sm]|xs|md|lg)$', replacement: '', descKey: 'optDescZhihu' }
   ],
   'default': [
-    { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))@[^?]+(?:\\?.*)?$', replacement: '$1', desc: '移除 @ 参数' },
-    { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))[?].*$',           replacement: '$1', desc: '移除查询串' },
-    { pattern: '[?&](width|height|size|format|quality)=\\d+',    replacement: '',   desc: '清尺寸参数', global: true },
-    { pattern: '[?&]thumb(nail)?=',                              replacement: '',   desc: '清缩略标记', global: true }
+    { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))@[^?]+(?:\\?.*)?$', replacement: '$1', descKey: 'optDescDef1' },
+    { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))[?].*$',           replacement: '$1', descKey: 'optDescDef2' },
+    { pattern: '[?&](width|height|size|format|quality)=\\d+',    replacement: '',   descKey: 'optDescDef3', global: true },
+    { pattern: '[?&]thumb(nail)?=',                              replacement: '',   descKey: 'optDescDef4', global: true }
   ]
 };
 
-// --------------------  运行时变量  --------------------
 let settings = {};
-let rules    = {};
+let rules = {};
+let editingDomain = null;
+let editingIndex = null;
 
-// --------------------  初始化  --------------------
+function T(key) { return chrome.i18n.getMessage(key); }
+
 document.addEventListener('DOMContentLoaded', async () => {
   await loadSettings();
   await loadRules();
+  applyI18n();
   bindEvents();
   switchTab('general');
-  document.addEventListener('click', e => {
-  if (e.target.classList.contains('nav-tab')) switchTab(e.target.dataset.tab);
-});
+  const userLang = settings.language !== 'auto' ? settings.language : chrome.i18n.getUILanguage();
+  if (!location.href.includes('?lang=' + userLang)) {
+    location.href = location.pathname + '?lang=' + userLang;
+  }
 });
 
-// --------------------  读写存储  --------------------
 async function loadSettings() {
   const res = await chrome.storage.sync.get('settings');
   settings = { ...DEFAULT_SETTINGS, ...(res.settings || {}) };
@@ -77,7 +78,6 @@ async function saveRules() {
   await chrome.storage.sync.set({ originalImageRules: rules });
 }
 
-// --------------------  UI 应用  --------------------
 function applySettingsUI() {
   Object.keys(settings).forEach(key => {
     const el = document.getElementById(key);
@@ -85,93 +85,87 @@ function applySettingsUI() {
     if (el.type === 'checkbox') el.checked = settings[key];
     else el.value = settings[key];
   });
-
-  // 自定义命名输入框显隐
-  document.getElementById('customNamingGroup').style.display =
-    settings.namingPattern === 'custom' ? 'block' : 'none';
+  document.getElementById('customNamingGroup').style.display = settings.namingPattern === 'custom' ? 'block' : 'none';
+  document.getElementById('languageSelect').value = settings.language || 'auto';
 }
 
-// --------------------  事件绑定  --------------------
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    el.textContent = T(el.dataset.i18n);
+  });
+}
+
 function bindEvents() {
-  // 标签切换
   document.querySelectorAll('.nav-tab').forEach(btn => {
     btn.addEventListener('click', e => switchTab(e.target.dataset.tab));
   });
-
-  // 保存 / 重置
   document.getElementById('saveSettings').addEventListener('click', handleSave);
   document.getElementById('resetSettings').addEventListener('click', handleReset);
-
-  // 命名模式变化
   document.getElementById('namingPattern').addEventListener('change', e => {
-    document.getElementById('customNamingGroup').style.display =
-      e.target.value === 'custom' ? 'block' : 'none';
+    document.getElementById('customNamingGroup').style.display = e.target.value === 'custom' ? 'block' : 'none';
   });
-
-  // 规则相关
   document.getElementById('addRule').addEventListener('click', () => openRuleEditor());
   document.getElementById('testRule').addEventListener('click', handleTestRule);
   document.querySelectorAll('.preset-btn').forEach(btn =>
     btn.addEventListener('click', e => loadPresetRules(e.target.dataset.preset))
   );
+  document.getElementById('languageSelect').addEventListener('change', async (e) => {
+    settings.language = e.target.value;
+    await saveSettings();
+    document.getElementById('langHelp').style.display = 'block';
+  });
+  document.getElementById('closeEditor').onclick = () => {
+    document.getElementById('ruleEditor').style.display = 'none';
+  };
+  document.getElementById('cancelRuleForm').onclick = () => {
+    document.getElementById('ruleEditor').style.display = 'none';
+  };
 }
 
-// --------------------  标签切换  --------------------
 function switchTab(tabId) {
   document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
   document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
   document.getElementById(tabId).classList.add('active');
 }
 
-// --------------------  保存 / 重置  --------------------
 async function handleSave() {
-  // 收集界面值
   const formKeys = [
     'enableExtension','enableContextMenu','showNotifications','enableBatchDownload',
     'downloadMode','maxBatchSize','downloadDelay','namingPattern','customNaming',
-    'addTimestamp','savePath','createFolder','createDateFolder','minWidth','minHeight','maxSize'
+    'addTimestamp','savePath','createFolder','createDateFolder','minWidth','minHeight','maxSize','language'
   ];
   formKeys.forEach(k => {
     const el = document.getElementById(k);
     if (!el) return;
     settings[k] = el.type === 'checkbox' ? el.checked : el.value;
   });
-
-  // allowedFormats
-  settings.allowedFormats = Array.from(document.querySelectorAll('input[name="formats"]:checked'))
-                                .map(cb => cb.value);
-
+  settings.allowedFormats = Array.from(document.querySelectorAll('input[name="formats"]:checked')).map(cb => cb.value);
   await saveSettings();
   await saveRules();
-
-  // 提示
-  showToast('设置已保存');
+  showToast(T('optRuleSaved'));
 }
 
 async function handleReset() {
-  if (!confirm('确定重置所有设置为默认值？')) return;
+  if (!confirm(T('optResetConfirm'))) return;
   settings = { ...DEFAULT_SETTINGS };
-  rules    = { ...DEFAULT_RULES };
+  rules = { ...DEFAULT_RULES };
   applySettingsUI();
   renderRules();
   await saveSettings();
   await saveRules();
-  showToast('已重置为默认设置');
+  showToast(T('optResetDone'));
 }
 
-// --------------------  规则渲染  --------------------
 function renderRules() {
   const container = document.getElementById('rulesContainer');
   container.innerHTML = '';
-
   Object.entries(rules).forEach(([domain, list]) => {
     const card = document.createElement('div');
     card.className = 'rule-card';
     card.innerHTML = `
       <div class="rule-header">
-        <span class="domain">${domain === 'default' ? '通用规则' : domain}</span>
+        <span class="domain">${domain === 'default' ? T('optGeneralRule') : domain}</span>
         <div>
           <button class="btn btn-icon" data-domain="${domain}" data-action="edit">✏️</button>
           <button class="btn btn-icon" data-domain="${domain}" data-action="delete">🗑️</button>
@@ -183,70 +177,58 @@ function renderRules() {
             <code class="pattern">${r.pattern}</code>
             <span class="arrow">→</span>
             <code class="replacement">${r.replacement}</code>
-            <span class="desc">${r.desc || ''}</span>
+            <span class="desc">${r.descKey ? T(r.descKey) : (r.desc || '')}</span>
           </div>`).join('')}
       </div>`;
     container.appendChild(card);
   });
-
-  // 绑定编辑 / 删除
   container.querySelectorAll('.btn-icon').forEach(btn =>
     btn.addEventListener('click', e => {
       const domain = e.target.dataset.domain;
       const action = e.target.dataset.action;
       if (action === 'delete') deleteRule(domain);
-      else openRuleEditor(domain);
+      else {
+        const idx = Array.from(e.target.parentElement.parentElement.parentElement.querySelectorAll('.btn-icon')).indexOf(e.target);
+        openRuleEditor(domain, idx);
+      }
     })
   );
 }
 
-// --------------------  规则编辑  --------------------
-function openRuleEditor(domain = null) {
+function openRuleEditor(domain = null, ruleIndex = null) {
   editingDomain = domain;
+  editingIndex = ruleIndex;
   const el = document.getElementById('ruleEditor');
-  el.style.display = 'block';
-
+  el.style.display = 'flex';
   document.getElementById('ruleDomain').value = domain || '';
-  // 简易一次性表单，保存时整体替换
-  document.getElementById('saveRuleForm').onsubmit = async e => {
-    e.preventDefault();
-    const d = (document.getElementById('ruleDomain').value || 'default').trim();
-    const p = document.getElementById('rulePattern').value.trim();
-    const r = document.getElementById('ruleReplacement').value.trim();
-    const desc = document.getElementById('ruleDesc').value.trim();
-    if (!p) return;
-
-    if (!rules[d]) rules[d] = [];
-    rules[d].push({ pattern: p, replacement: r, desc });
-    await saveRules();
-    renderRules();
-    el.style.display = 'none';
-    showToast('规则已保存');
-  };
-  document.getElementById('cancelRuleForm').onclick = () => (el.style.display = 'none');
+  document.getElementById('rulePattern').value = '';
+  document.getElementById('ruleReplacement').value = '';
+  document.getElementById('ruleDesc').value = '';
+  if (domain !== null && ruleIndex !== null) {
+    const rule = rules[domain][ruleIndex];
+    document.getElementById('ruleDomain').value = domain;
+    document.getElementById('rulePattern').value = rule.pattern;
+    document.getElementById('ruleReplacement').value = rule.replacement;
+    document.getElementById('ruleDesc').value = rule.desc || '';
+  }
 }
 
 function deleteRule(domain) {
-  if (!confirm(`删除域名 "${domain}" 下的所有规则？`)) return;
+  if (!confirm(T('optDeleteConfirm'))) return;
   delete rules[domain];
   saveRules();
   renderRules();
-  showToast('规则已删除');
+  showToast(T('optRuleDeleted'));
 }
 
-// --------------------  规则测试  --------------------
 function handleTestRule() {
   const url = document.getElementById('testUrl').value.trim();
   if (!url) return;
-
   let processed = url;
-  let matched = '无匹配规则';
-
-  // 按域名找规则
+  let matched = T('optNoMatch');
   const u = new URL(url);
   const domain = u.hostname.replace(/^www\./, '');
   const list = rules[domain] || rules['default'] || [];
-
   for (const rule of list) {
     const re = new RegExp(rule.pattern, rule.global ? 'g' : '');
     if (re.test(url)) {
@@ -255,40 +237,38 @@ function handleTestRule() {
       break;
     }
   }
-
   const box = document.getElementById('testResult');
   box.style.display = 'block';
-  document.getElementById('originalUrl').textContent   = url;
+  document.getElementById('originalUrl').textContent = url;
   document.getElementById('processedUrl').textContent = processed;
-  document.getElementById('matchedRule').textContent  = matched;
+  document.getElementById('matchedRule').textContent = matched;
 }
 
-// --------------------  预设加载  --------------------
 function loadPresetRules(preset) {
   const map = {
     bilibili: {
       'bilibili.com': [
-        { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))@[^?]+(?:\\?.*)?$', replacement: '$1', desc: '移除B站参数' },
-        { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))[?].*$',           replacement: '$1', desc: '移除查询串' }
+        { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))@[^?]+(?:\\?.*)?$', replacement: '$1', descKey: 'optDescBili' },
+        { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))[?].*$',           replacement: '$1', descKey: 'optDescDef2' }
       ]
     },
     weibo: {
       'weibo.com': [
-        { pattern: '\\/thumbnail$', replacement: '',        desc: '去掉 thumbnail' },
-        { pattern: '\\/small$',     replacement: '/large', desc: '换成 large' }
+        { pattern: '\\/thumbnail$', replacement: '',        descKey: 'optDescWeibo' },
+        { pattern: '\\/small$',     replacement: '/large', descKey: 'optDescWeibo2' }
       ]
     },
     zhihu: {
       'zhihu.com': [
-        { pattern: '_([sm]|xs|md|lg)$', replacement: '', desc: '去掉知乎尺寸后缀' }
+        { pattern: '_([sm]|xs|md|lg)$', replacement: '', descKey: 'optDescZhihu' }
       ]
     },
     default: {
       'default': [
-        { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))@[^?]+(?:\\?.*)?$', replacement: '$1', desc: '移除 @ 参数' },
-        { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))[?].*$',           replacement: '$1', desc: '移除查询串' },
-        { pattern: '[?&](width|height|size|format|quality)=\\d+',    replacement: '',   desc: '清尺寸参数', global: true },
-        { pattern: '[?&]thumb(nail)?=',                              replacement: '',   desc: '清缩略标记', global: true }
+        { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))@[^?]+(?:\\?.*)?$', replacement: '$1', descKey: 'optDescDef1' },
+        { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))[?].*$',           replacement: '$1', descKey: 'optDescDef2' },
+        { pattern: '[?&](width|height|size|format|quality)=\\d+',    replacement: '',   descKey: 'optDescDef3', global: true },
+        { pattern: '[?&]thumb(nail)?=',                              replacement: '',   descKey: 'optDescDef4', global: true }
       ]
     }
   };
@@ -296,14 +276,12 @@ function loadPresetRules(preset) {
   Object.assign(rules, map[preset]);
   saveRules();
   renderRules();
-  showToast('已加载预设规则');
+  showToast(T('optPresetLoaded'));
 }
 
-// --------------------  轻提示  --------------------
 function showToast(msg) {
   const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
+  t.className = 'toast'; t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 2000);
 }

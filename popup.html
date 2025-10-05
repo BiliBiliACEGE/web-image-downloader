@@ -1,54 +1,52 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>网页图片下载器</title>
-    <link rel="stylesheet" href="styles/popup.css">
+  <meta charset="utf-8">
+  <title data-i18n="extName"></title>
+  <link rel="stylesheet" href="styles/popup.css">
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <img src="icons/48.png" alt="Logo" class="logo">
-            <h1 class="title">网页图片下载器</h1>
-        </header>
-        
-        <main class="main">
-            <div class="quick-actions">
-                <button id="downloadCurrent" class="btn btn-primary">
-                    <span class="icon">⬇️</span>
-                    下载当前页面图片
-                </button>
-                <button id="openOptions" class="btn btn-secondary">
-                    <span class="icon">⚙️</span>
-                    设置
-                </button>
-            </div>
-            
-            <div class="stats">
-                <div class="stat-item">
-                    <span class="stat-label">今日下载</span>
-                    <span class="stat-value" id="todayCount">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">总计下载</span>
-                    <span class="stat-value" id="totalCount">0</span>
-                </div>
-            </div>
-            
-            <div class="recent-downloads">
-                <h3>最近下载</h3>
-                <div id="recentList" class="recent-list">
-                    <div class="empty-state">暂无下载记录</div>
-                </div>
-            </div>
-        </main>
-        
-        <footer class="footer">
-            <button id="clearHistory" class="btn btn-text">清除历史</button>
-        </footer>
-    </div>
-    
-    <script src="popup.js"></script>
+  <div class="container">
+    <header class="header">
+      <img src="icons/48.png" alt="Logo" class="logo"/>
+      <h1 class="title" data-i18n="extName"></h1>
+    </header>
+
+    <main class="main">
+      <div class="quick-actions">
+        <button id="downloadCurrent" class="btn btn-primary">
+          <span class="icon">⬇️</span>
+          <span data-i18n="popDownload"></span>
+        </button>
+        <button id="openOptions" class="btn btn-secondary">
+          <span class="icon">⚙️</span>
+          <span data-i18n="popOpenOpt"></span>
+        </button>
+      </div>
+
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-label" data-i18n="popToday"></span>
+          <span class="stat-value" id="todayCount">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label" data-i18n="popTotal"></span>
+          <span class="stat-value" id="totalCount">0</span>
+        </div>
+      </div>
+
+      <div class="recent-downloads">
+        <h3 data-i18n="popRecent"></h3>
+        <div id="recentList" class="recent-list">
+          <div class="empty-state" data-i18n="popEmpty"></div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <button id="clearHistory" class="btn btn-text" data-i18n="popClear"></button>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
 </body>
 </html>

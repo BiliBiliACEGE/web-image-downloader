@@ -1,13 +1,15 @@
 {
   "manifest_version": 3,
-  "name": "网页图片下载器",
+  "name": "__MSG_extName__",
   "version": "1.0.0",
-  "description": "智能识别并下载图片原图",
+  "description": "__MSG_extDesc__",
+  "default_locale": "zh_CN",
   "permissions": [
     "contextMenus",
     "downloads",
     "storage",
-    "activeTab"
+    "activeTab",
+    "scripting"
   ],
   "host_permissions": [
     "<all_urls>"
@@ -29,7 +31,7 @@
       "128": "icons/128.png"
     },
   "web_accessible_resources": [{
-  "resources": ["libs/jszip.min.js"],
+  "resources": ["libs/jszip.min.js","_locales/*"],
   "matches": ["<all_urls>"]
   }]
   },
