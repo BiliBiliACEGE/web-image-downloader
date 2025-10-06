@@ -3,7 +3,7 @@ const DEFAULT_SETTINGS = {
   enableContextMenu: true,
   showNotifications: true,
   enableBatchDownload: true,
-  downloadMode: 'auto',
+  downloadMode: 'direct',
   maxBatchSize: 10,
   downloadDelay: 500,
   namingPattern: 'original',
