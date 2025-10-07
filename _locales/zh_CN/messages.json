@@ -99,5 +99,10 @@
   "optRulePattern": { "message": "模式（正则表达式）" },
   "optRuleReplacement": { "message": "替换" },
   "optRuleDesc": { "message": "描述（可选）" },
-  "optDescCustom": { "message": "自定义规则" }
+  "optDescCustom": { "message": "自定义规则" },
+  "optBlockMode": { "message": "积木模式" },
+  "optCodeMode": { "message": "代码模式" },
+  "optDragHere": { "message": "把积木拖到这里" },
+  "optGenerateRule": { "message": "生成规则" },
+  "optEmptyBlocks": { "message": "请先拖入积木" }
 }

@@ -79,6 +79,7 @@ async function saveRules() {
 }
 
 function applySettingsUI() {
+  if (!settings.downloadMode) settings.downloadMode = DEFAULT_SETTINGS.downloadMode;
   Object.keys(settings).forEach(key => {
     const el = document.getElementById(key);
     if (!el) return;
@@ -120,6 +121,71 @@ function bindEvents() {
   document.getElementById('cancelRuleForm').onclick = () => {
     document.getElementById('ruleEditor').style.display = 'none';
   };
+
+  /* 双模式切换 */
+  document.getElementById('blockModeBtn').addEventListener('click', () => switchMode('block'));
+  document.getElementById('codeModeBtn').addEventListener('click', () => switchMode('code'));
+  document.getElementById('buildToRule').addEventListener('click', buildToRule);
+
+  /* 积木拖拽 */
+  const buildArea = document.getElementById('buildArea');
+  buildArea.addEventListener('dragover', e => e.preventDefault());
+  buildArea.addEventListener('drop', handleDrop);
+  document.querySelectorAll('.block').forEach(b => {
+    b.draggable = true;
+    b.addEventListener('dragstart', handleDragStart);
+  });
+}
+
+function switchMode(mode) {
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.mode-panel').forEach(p => p.classList.remove('active'));
+  if (mode === 'block') {
+    document.getElementById('blockModeBtn').classList.add('active');
+    document.getElementById('blockMode').classList.add('active');
+  } else {
+    document.getElementById('codeModeBtn').classList.add('active');
+    document.getElementById('codeMode').classList.add('active');
+  }
+}
+
+function handleDragStart(e) {
+  const data = {
+    pattern: e.target.dataset.pattern,
+    repl: e.target.dataset.repl,
+    desc: e.target.title
+  };
+  e.dataTransfer.setData('text/plain', JSON.stringify(data));
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+  const card = document.createElement('div');
+  card.className = 'build-block';
+  card.draggable = true;
+  card.dataset.pattern = data.pattern;
+  card.dataset.repl = data.repl;
+  card.innerHTML = `<span>${data.desc}</span><button class="remove-block">×</button>`;
+  card.querySelector('.remove-block').onclick = () => card.remove();
+  document.getElementById('buildArea').appendChild(card);
+}
+
+function buildToRule() {
+  const blocks = document.getElementById('buildArea').querySelectorAll('.build-block');
+  if (!blocks.length) return alert(T('optEmptyBlocks'));
+  const domain = document.getElementById('buildDomain').value.trim() || 'default';
+  blocks.forEach(b => {
+    const pat = b.dataset.pattern;
+    const repl = b.dataset.repl;
+    const desc = b.querySelector('span').textContent;
+    if (!rules[domain]) rules[domain] = [];
+    rules[domain].push({ pattern: pat, replacement: repl, descKey: null, desc });
+  });
+  saveRules();
+  renderRules();
+  switchMode('code');
+  showToast(T('optRuleSaved'));
 }
 
 function switchTab(tabId) {
@@ -197,19 +263,21 @@ function renderRules() {
 
 function openRuleEditor(domain = null, ruleIndex = null) {
   editingDomain = domain;
-  editingIndex = ruleIndex;
+  editingIndex  = ruleIndex;
   const el = document.getElementById('ruleEditor');
   el.style.display = 'flex';
-  document.getElementById('ruleDomain').value = domain || '';
-  document.getElementById('rulePattern').value = '';
+
+  document.getElementById('ruleDomain').value   = domain || '';
+  document.getElementById('rulePattern').value  = '';
   document.getElementById('ruleReplacement').value = '';
-  document.getElementById('ruleDesc').value = '';
+  document.getElementById('ruleDesc').value     = '';
+
   if (domain !== null && ruleIndex !== null) {
     const rule = rules[domain][ruleIndex];
-    document.getElementById('ruleDomain').value = domain;
-    document.getElementById('rulePattern').value = rule.pattern;
+    document.getElementById('ruleDomain').value   = domain;
+    document.getElementById('rulePattern').value  = rule.pattern;
     document.getElementById('ruleReplacement').value = rule.replacement;
-    document.getElementById('ruleDesc').value = rule.desc || '';
+    document.getElementById('ruleDesc').value     = rule.desc || '';
   }
 }
 

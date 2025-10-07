@@ -99,5 +99,9 @@
   "optRulePattern": { "message": "Pattern (RegExp)" },
   "optRuleReplacement": { "message": "Replacement" },
   "optRuleDesc": { "message": "Description (optional)" },
-  "optDescCustom": { "message": "Custom rule" }
+  "optDescCustom": { "message": "Custom rule" },
+  "optBlockMode": { "message": "Block Mode" },
+  "optCodeMode": { "message": "Code Mode" },
+  "optDragHere": { "message": "Drag blocks here" },
+  "optEmptyBlocks": { "message": "Please drag in blocks first" }
 }

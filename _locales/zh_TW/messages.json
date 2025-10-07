@@ -99,5 +99,9 @@
   "optRulePattern": { "message": "模式（正則表達式）" },
   "optRuleReplacement": { "message": "更換" },
   "optRuleDesc": { "message": "描述（可選）" },
-  "optDescCustom": { "message": "自訂規則" }
+  "optDescCustom": { "message": "自訂規則" },
+  "optBlockMode": { "message": "積木模式" },
+  "optCodeMode": { "message": "程式碼模式" },
+  "optDragHere": { "message": "把積木拖到這裡" },
+  "optEmptyBlocks": { "message": "請先拖入積木" }
 }

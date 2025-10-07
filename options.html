@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title data-i18n="optTitle"></title>
-  <link rel="stylesheet" href="styles/options.css"/>
+  <link rel="stylesheet" href="styles/options.css">
 </head>
 <body>
   <div class="container">
@@ -17,7 +17,7 @@
       <button class="nav-tab active" data-tab="general" data-i18n="optGeneral"></button>
       <button class="nav-tab" data-tab="rules" data-i18n="optRules"></button>
       <button class="nav-tab" data-tab="advanced" data-i18n="optAdvanced"></button>
-      <button class="nav-tab" data-tab="about" data-i18n="optAbout"></button>
+      <button class="nav-tab" data-i18n="optAbout" data-tab="about"></button>
     </nav>
 
     <main class="main">
@@ -27,7 +27,18 @@
           <h2 class="section-title" data-i18n="optGeneral"></h2>
 
           <div class="form-group">
-            <label class="form-label" data-i18n="optDownloadMode"></label>
+            <label data-i18n="optLanguage"></label>
+            <select id="languageSelect" class="form-select">
+              <option value="auto" data-i18n="optLangAuto"></option>
+              <option value="en" data-i18n="optLangEN"></option>
+              <option value="zh_CN" data-i18n="optLangZHCN"></option>
+              <option value="zh_TW" data-i18n="optLangZHTW"></option>
+            </select>
+            <p class="form-help" id="langHelp" data-i18n="optLangReload" style="display:none;color:#d13438;"></p>
+          </div>
+
+          <div class="form-group">
+            <label data-i18n="optDownloadMode"></label>
             <select id="downloadMode" class="form-select">
               <option value="direct" data-i18n="optDirect"></option>
               <option value="newTab" data-i18n="optNewTab"></option>
@@ -37,36 +48,20 @@
             <p class="form-help" data-i18n="optDownloadModeHelp"></p>
           </div>
 
-        <div class="form-group">
-        <label class="form-label" data-i18n="optLanguage"></label>
-        <select id="languageSelect" class="form-select">
-            <option value="auto" data-i18n="optLangAuto"></option>
-            <option value="en" data-i18n="optLangEN"></option>
-            <option value="zh_CN" data-i18n="optLangZHCN"></option>
-            <option value="zh_TW" data-i18n="optLangZHTW"></option>
-        </select>
-        <p class="form-help" data-i18n="optLangReload" style="color:#d13438;margin-top:4px;display:none;" id="langHelp"></p>
-        </div>
-
           <div class="form-group">
-            <label class="form-label" data-i18n="optFileNameTpl"></label>
-            <input type="text" id="fileNameTemplate" class="form-input" placeholder="{original}"/>
+            <label data-i18n="optFileNameTpl"></label>
+            <input type="text" id="fileNameTemplate" class="form-input" placeholder="{original}">
             <p class="form-help" data-i18n="optFileNameTplHelp"></p>
           </div>
-        <div id="customNamingGroup" class="form-group" style="display:none;">
-            <label class="form-label" data-i18n="optCustomPattern"></label>
-            <input type="text" id="customNaming" class="form-input" placeholder="{domain}_{timestamp}_{index}"/>
-            <p class="form-help" data-i18n="optCustomPatternHelp"></p>
-        </div>
 
           <div class="form-group">
-            <label class="form-label" data-i18n="optMaxFileLen"></label>
-            <input type="number" id="maxFileNameLength" class="form-input" min="10" max="255" value="50"/>
+            <label data-i18n="optMaxFileLen"></label>
+            <input type="number" id="maxFileNameLength" class="form-input" min="10" max="255" value="50">
             <p class="form-help" data-i18n="optMaxFileLenHelp"></p>
           </div>
 
           <div class="form-group">
-            <label class="form-label" data-i18n="optNamingPattern"></label>
+            <label data-i18n="optNamingPattern"></label>
             <select id="namingPattern" class="form-select">
               <option value="original" data-i18n="optOriginal"></option>
               <option value="timestamp" data-i18n="optTimestamp"></option>
@@ -75,9 +70,15 @@
             </select>
           </div>
 
+          <div id="customNamingGroup" class="form-group" style="display:none;">
+            <label data-i18n="optCustomPattern"></label>
+            <input type="text" id="customNaming" class="form-input" placeholder="{domain}_{timestamp}_{index}">
+            <p class="form-help" data-i18n="optCustomPatternHelp"></p>
+          </div>
+
           <div class="form-group">
             <label class="form-checkbox">
-              <input type="checkbox" id="showNotifications"/>
+              <input type="checkbox" id="showNotifications">
               <span class="checkmark"></span>
               <span data-i18n="optShowNotify"></span>
             </label>
@@ -85,7 +86,7 @@
 
           <div class="form-group">
             <label class="form-checkbox">
-              <input type="checkbox" id="enableContextMenu"/>
+              <input type="checkbox" id="enableContextMenu">
               <span class="checkmark"></span>
               <span data-i18n="optContextMenu"></span>
             </label>
@@ -93,7 +94,7 @@
 
           <div class="form-group">
             <label class="form-checkbox">
-              <input type="checkbox" id="autoCloseTab"/>
+              <input type="checkbox" id="autoCloseTab">
               <span class="checkmark"></span>
               <span data-i18n="optAutoClose"></span>
             </label>
@@ -104,23 +105,52 @@
       <!-- 规则设置 -->
       <div id="rules" class="tab-content">
         <section class="section">
-        <div class="section-header">
-        <h2 class="section-title" data-i18n="optRules"></h2>
-        <button id="addRule" class="btn btn-primary" data-i18n="optAddRule"></button>
-      </div>
-      <div id="rulesContainer"></div>
-    </section>
-
-        <section class="section">
-          <h2 class="section-title" data-i18n="optRuleTest"></h2>
-          <div class="test-area">
-            <div class="form-group">
-              <label class="form-label" data-i18n="optTestUrl"></label>
-              <input type="text" id="testUrl" class="form-input" placeholder="https://example.com/img.jpg"/>
-            </div>
-            <button id="testRule" class="btn btn-secondary" data-i18n="optTestBtn"></button>
-            <div id="testResult" class="test-result"></div>
+          <div class="section-header">
+            <h2 class="section-title" data-i18n="optRules"></h2>
+            <button id="addRule" class="btn btn-primary" data-i18n="optAddRule"></button>
           </div>
+
+          <!-- 模式切换 -->
+          <div class="mode-switch">
+            <button id="blockModeBtn" class="mode-btn active" data-i18n="optBlockMode"></button>
+            <button id="codeModeBtn"  class="mode-btn" data-i18n="optCodeMode"></button>
+          </div>
+
+            <!-- === 积木模式 === -->
+            <div id="blockMode" class="mode-panel active">
+              <div id="blockEditor" class="block-editor">
+                <div class="block-pool">
+                  <div class="block" data-pattern="@[^?]+" data-repl="" title="Remove @ params">🗑️ 去掉@参数</div>
+                  <div class="block" data-pattern="\/thumbnail$" data-repl="" title="Remove thumbnail">🗑️ 去掉缩略图</div>
+                  <div class="block" data-pattern="\/small$" data-repl="/large" title="换大图">🔍 换成大图</div>
+                  <div class="block" data-pattern="_([sm]|xs|md|lg)$" data-repl="" title="去掉尺寸后缀">📏 去掉尺寸后缀</div>
+                  <div class="block" data-pattern="[?&](width|height|size|format|quality)=\\d+" data-repl="" title="清尺寸参数">📐 清尺寸参数</div>
+                  <div class="block" data-pattern="[?&]thumb(nail)?=" data-repl="" title="清缩略标记">🗑️ 清缩略标记</div>
+                </div>
+                <div id="buildArea" class="build-area">
+                  <p class="empty-hint" data-i18n="optDragHere"></p>
+                </div>
+                <input type="text" id="buildDomain" class="form-input" placeholder="域名（留空=通用）">
+                <button id="buildToRule" class="btn btn-primary" data-i18n="optGenerateRule"></button>
+              </div>
+            </div>
+
+            <!-- === 原生编辑 === -->
+            <div id="codeMode" class="mode-panel">
+              <div id="rulesContainer"></div>
+            </div>
+
+          <section class="section">
+            <h2 class="section-title" data-i18n="optRuleTest"></h2>
+            <div class="test-area">
+              <div class="form-group">
+                <label data-i18n="optTestUrl"></label>
+                <input type="text" id="testUrl" class="form-input" placeholder="https://example.com/img.jpg">
+              </div>
+              <button id="testRule" class="btn btn-secondary" data-i18n="optTestBtn"></button>
+              <div id="testResult" class="test-result"></div>
+            </div>
+          </section>
         </section>
       </div>
 
@@ -129,32 +159,32 @@
         <section class="section">
           <h2 class="section-title" data-i18n="optAdvanced"></h2>
           <div class="form-group">
-            <label class="form-label" data-i18n="optConcurrent"></label>
-            <input type="number" id="concurrentDownloads" class="form-input" min="1" max="10" value="3"/>
+            <label data-i18n="optConcurrent"></label>
+            <input type="number" id="concurrentDownloads" class="form-input" min="1" max="10" value="3">
             <p class="form-help" data-i18n="optConcurrentHelp"></p>
           </div>
           <div class="form-group">
-            <label class="form-label" data-i18n="optDelay"></label>
-            <input type="number" id="downloadDelay" class="form-input" min="0" max="5000" value="500"/>
+            <label data-i18n="optDelay"></label>
+            <input type="number" id="downloadDelay" class="form-input" min="0" max="5000" value="500">
             <p class="form-help" data-i18n="optDelayHelp"></p>
           </div>
           <div class="form-group">
             <label class="form-checkbox">
-              <input type="checkbox" id="enableReferrer"/>
+              <input type="checkbox" id="enableReferrer">
               <span class="checkmark"></span>
               <span data-i18n="optReferrer"></span>
             </label>
           </div>
           <div class="form-group">
             <label class="form-checkbox">
-              <input type="checkbox" id="enableCustomHeaders"/>
+              <input type="checkbox" id="enableCustomHeaders">
               <span class="checkmark"></span>
               <span data-i18n="optCustomHdr"></span>
             </label>
           </div>
           <div id="customHeaders" class="custom-headers" style="display:none;">
-            <label class="form-label" data-i18n="optHdrJson"></label>
-            <textarea id="headersJson" class="form-textarea" rows="5" placeholder='{"User-Agent":"Mozilla/5.0..."}'></textarea>
+            <label data-i18n="optHdrJson"></label>
+            <textarea id="headersJson" class="form-textarea" rows="5" placeholder='{"User-Agent": "Mozilla/5.0..."}'></textarea>
           </div>
         </section>
 
@@ -163,7 +193,7 @@
           <div class="form-group">
             <button id="exportSettings" class="btn btn-secondary" data-i18n="optExport"></button>
             <button id="importSettings" class="btn btn-secondary" data-i18n="optImport"></button>
-            <input type="file" id="importFile" accept=".json" style="display:none"/>
+            <input type="file" id="importFile" accept=".json" style="display:none;">
           </div>
           <div class="form-group">
             <button id="resetSettings" class="btn btn-danger" data-i18n="optReset"></button>
@@ -200,43 +230,44 @@
       </div>
     </main>
 
-        <!-- 规则编辑器模态框 -->
-    <div id="ruleEditor" class="modal" style="display:none;">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 data-i18n="optEditRule"></h3>
-          <button class="modal-close" id="closeEditor">&times;</button>
-        </div>
-        <form id="ruleForm" class="modal-body">
-          <div class="form-group">
-            <label data-i18n="optRuleDomain"></label>
-            <input type="text" id="ruleDomain" class="form-input" placeholder="example.com">
-          </div>
-          <div class="form-group">
-            <label data-i18n="optRulePattern"></label>
-            <textarea id="rulePattern" class="form-textarea" rows="2" placeholder="正则表达式"></textarea>
-          </div>
-          <div class="form-group">
-            <label data-i18n="optRuleReplacement"></label>
-            <input type="text" id="ruleReplacement" class="form-input" placeholder="$1">
-          </div>
-          <div class="form-group">
-            <label data-i18n="optRuleDesc"></label>
-            <input type="text" id="ruleDesc" class="form-input" placeholder="简短描述（可选）">
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn-primary" data-i18n="optSave"></button>
-            <button type="button" class="btn btn-secondary" id="cancelRuleForm" data-i18n="optCancel"></button>
-          </div>
-        </form>
-      </div>
-    </div>
-
     <footer class="footer">
       <button id="saveSettings" class="btn btn-primary" data-i18n="optSave"></button>
       <button id="resetSettings" class="btn btn-secondary" data-i18n="optReset"></button>
     </footer>
   </div>
+
+  <!-- 规则编辑器模态框 -->
+  <div id="ruleEditor" class="modal" style="display:none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 data-i18n="optEditRule"></h3>
+        <button class="modal-close" id="closeEditor">&times;</button>
+      </div>
+      <form id="ruleForm" class="modal-body">
+        <div class="form-group">
+          <label data-i18n="optRuleDomain"></label>
+          <input type="text" id="ruleDomain" class="form-input" placeholder="example.com">
+        </div>
+        <div class="form-group">
+          <label data-i18n="optRulePattern"></label>
+          <textarea id="rulePattern" class="form-textarea regex-input" rows="4" placeholder="正则表达式"></textarea>
+        </div>
+        <div class="form-group">
+          <label data-i18n="optRuleReplacement"></label>
+          <input type="text" id="ruleReplacement" class="form-input" placeholder="$1">
+        </div>
+        <div class="form-group">
+          <label data-i18n="optRuleDesc"></label>
+          <input type="text" id="ruleDesc" class="form-input" placeholder="简短描述（可选）">
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" data-i18n="optSave"></button>
+          <button type="button" class="btn btn-secondary" id="cancelRuleForm" data-i18n="optCancel"></button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script src="options.js"></script>
 </body>
 </html>
