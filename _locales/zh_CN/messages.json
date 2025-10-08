@@ -1,6 +1,6 @@
 {
   "extName": { "message": "网页图片下载器" },
-  "extDesc": { "message": "智能识别并下载网页原图" },
+  "extDesc": { "message": "智能下载原图——右键任意图片或空白处，零正则积木、批量 ZIP、域名文件夹、多语言，完全自定义。" },
   "ctxDownload": { "message": "下载原图" },
   "ctxView": { "message": "查看原图" },
   "ctxBatch": { "message": "下载页面所有图片" },

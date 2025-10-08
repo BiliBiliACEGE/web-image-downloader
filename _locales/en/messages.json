@@ -1,6 +1,6 @@
 {
   "extName": { "message": "Web Image Downloader" },
-  "extDesc": { "message": "Smartly download original images from web pages." },
+  "extDesc": { "message": "Smartly download original images—right-click any pic or blank space, zero-regex blocks, batch ZIP, domain folders, multi-language, fully custom." },
   "ctxDownload": { "message": "Download original image" },
   "ctxView": { "message": "View original image" },
   "ctxBatch": { "message": "Download all images" },

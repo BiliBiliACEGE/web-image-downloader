@@ -1,6 +1,6 @@
 {
   "extName": { "message": "網頁圖片下載器" },
-  "extDesc": { "message": "智慧識別並下載網頁原圖" },
+  "extDesc": { "message": "智慧下載原圖——右鍵任意圖片或空白處，零正則積木、批次 ZIP、網域資料夾、多語言，完全自訂。" },
   "ctxDownload": { "message": "下載原圖" },
   "ctxView": { "message": "查看原圖" },
   "ctxBatch": { "message": "下載頁面所有圖片" },
