@@ -1,4 +1,3 @@
-/* background.js  完整可运行版：无 fetch，全 i18n，ZIP/域名文件夹，无连接错误 */
 importScripts('libs/jszip.min.js');
 
 const DEFAULT_RULES = {
@@ -21,7 +20,6 @@ const DEFAULT_RULES = {
   ]
 };
 
-/* 统一 i18n：后台脚本始终可用，无需 fetch */
 function T(key) { return chrome.i18n.getMessage(key); }
 
 chrome.runtime.onInstalled.addListener(async () => {
@@ -32,26 +30,42 @@ chrome.runtime.onInstalled.addListener(async () => {
 
 async function createMenus() {
   await chrome.contextMenus.removeAll();
+  /* 单图 */
   chrome.contextMenus.create({id: 'downloadOriginalImage', title: T('ctxDownload'), contexts: ['image']});
-  chrome.contextMenus.create({id: 'viewOriginalImage',   title: T('ctxView'), contexts: ['image']});
+  chrome.contextMenus.create({id: 'viewOriginalImage',   title: T('ctxView'),   contexts: ['image']});
+  /* 批量主菜单 */
   chrome.contextMenus.create({id: 'batchDownload', title: T('ctxBatch'), contexts: ['page']});
-  chrome.contextMenus.create({id: 'batchZip',       parentId: 'batchDownload', title: T('ctxZip'), contexts: ['page']});
+  /* 二级菜单：按域名文件夹保存 */
   chrome.contextMenus.create({id: 'batchDomainDir', parentId: 'batchDownload', title: T('ctxDomain'), contexts: ['page']});
+  chrome.contextMenus.create({id: 'batchZip',       parentId: 'batchDownload', title: T('ctxZip'), contexts: ['page']});
 }
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'downloadOriginalImage') {
     const url = await getOriginalUrl(info.srcUrl, tab.url);
-    chrome.downloads.download({url, saveAs: false});
+    const filename = generateFileName(url, 'single');
+    chrome.downloads.download({url, filename, saveAs: false}, (id) => {
+      if (!chrome.runtime.lastError) writeHistory(url, filename);
+    });
   }
   if (info.menuItemId === 'viewOriginalImage') {
     const url = await getOriginalUrl(info.srcUrl, tab.url);
     chrome.tabs.create({url, active: true});
   }
-  if (info.menuItemId === 'batchZip')       return batchDownload(tab, 'zip');
-  if (info.menuItemId === 'batchDomainDir') return batchDownload(tab, 'domain');
+  if (info.menuItemId === 'batchZip') return batchDownload(tab, 'zip');
 });
 
+/* 轻提示 */
+function showNotification(msg) {
+  chrome.notifications.create({
+    type: 'basic',
+    iconUrl: 'icons/icon48.png',
+    title: 'Image Downloader',
+    message: msg
+  });
+}
+
+/* 批量下载（含历史写入） */
 async function batchDownload(tab, mode) {
   await chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['content.js']}).catch(() => {});
   const res = await chrome.tabs.sendMessage(tab.id, {action: 'getAllImages'});
@@ -60,19 +74,24 @@ async function batchDownload(tab, mode) {
   const domain = new URL(tab.url).hostname.replace(/^www\./, '');
   const ts   = Date.now();
 
+  /* === 互斥分支 === */
   if (mode === 'domain') {
+    /* 仅：按域名文件夹保存 */
     for (let i = 0; i < res.images.length; i++) {
       const raw = await getOriginalUrl(res.images[i], tab.url);
       const url = fixUrl(raw, tab.url);
       if (!url) continue;
       const ext = (url.match(/\.(\w{3,4})(?=\?|$)/) || [, 'jpg'])[1];
-      chrome.downloads.download({url, filename: `${domain}/image_${i}.${ext}`, saveAs: false});
+      const filename = `${domain}/image_${i}.${ext}`;
+      chrome.downloads.download({url, filename, saveAs: false}, (id) => {
+        if (!chrome.runtime.lastError) writeHistory(url, filename);
+      });
       await sleep(300);
     }
     return;
   }
 
-  /* ZIP 模式 */
+  /* === 仅：打包 ZIP === */
   const zip = new JSZip();
   const folder = zip.folder(domain);
   let index = 0;
@@ -89,12 +108,22 @@ async function batchDownload(tab, mode) {
   }
   const zipBlob = await zip.generateAsync({type: 'blob'});
   const reader = new FileReader();
-  reader.onloadend = () => chrome.downloads.download({
-    url: reader.result,
-    filename: `${domain}_${ts}.zip`,
-    saveAs: false
-  });
+  reader.onloadend = () => {
+    const filenameZip = `${domain}_${ts}.zip`;
+    chrome.downloads.download({url: reader.result, filename: filenameZip, saveAs: false}, (id) => {
+      if (!chrome.runtime.lastError) writeHistory(reader.result, filenameZip);
+    });
+  };
   reader.readAsDataURL(zipBlob);
+}
+
+function writeHistory(url, filename) {
+  chrome.storage.local.get({downloadHistory: []}, (r) => {
+    const list = r.downloadHistory;
+    list.push({url, filename, timestamp: Date.now()});
+    if (list.length > 50) list.shift();
+    chrome.storage.local.set({downloadHistory: list});
+  });
 }
 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
@@ -104,6 +133,13 @@ function fixUrl(raw, base) {
   if (raw.startsWith('//')) raw = 'https:' + raw;
   if (raw.startsWith('/')) raw = new URL(base).origin + raw;
   try { return new URL(raw).href; } catch { return null; }
+}
+
+function generateFileName(url, mode) {
+  const u = new URL(url);
+  const orig = u.pathname.split('/').pop() || 'image';
+  const ext = orig.match(/\.(\w{3,4})$/)?.[1] || 'jpg';
+  return mode === 'single' ? orig : `${u.hostname}_${Date.now()}.${ext}`;
 }
 
 async function getOriginalUrl(imageUrl, pageUrl) {
