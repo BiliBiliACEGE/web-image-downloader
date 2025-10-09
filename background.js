@@ -2,55 +2,71 @@ importScripts('libs/jszip.min.js');
 
 const DEFAULT_RULES = {
   'bilibili.com': [
-    {pattern: '(.+\\.(jpg|jpeg|png|gif|webp))@[^?]+(?:\\?.*)?$', replacement: '$1'},
-    {pattern: '(.+\\.(jpg|jpeg|png|gif|webp))[?].*$',           replacement: '$1'}
+    { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))@[^?]+(?:\\?.*)?$', replacement: '$1' },
+    { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))[?].*$', replacement: '$1' }
   ],
   'weibo.com': [
-    {pattern: '\\/thumbnail$', replacement: ''},
-    {pattern: '\\/small$',     replacement: '/large'}
+    { pattern: '\\/thumbnail$', replacement: '' },
+    { pattern: '\\/small$', replacement: '/large' }
   ],
   'zhihu.com': [
-    {pattern: '_([sm]|xs|md|lg)$', replacement: ''}
+    { pattern: '_([sm]|xs|md|lg)$', replacement: '' }
   ],
   'default': [
-    {pattern: '(.+\\.(jpg|jpeg|png|gif|webp))@[^?]+(?:\\?.*)?$', replacement: '$1'},
-    {pattern: '(.+\\.(jpg|jpeg|png|gif|webp))[?].*$',           replacement: '$1'},
-    {pattern: '[?&](width|height|size|format|quality)=\\d+', replacement: '', flags: 'g'},
-    {pattern: '[?&]thumb(nail)?=',                              replacement: '', flags: 'g'}
+    { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))@[^?]+(?:\\?.*)?$', replacement: '$1' },
+    { pattern: '(.+\\.(jpg|jpeg|png|gif|webp))[?].*$', replacement: '$1' },
+    { pattern: '[?&](width|height|size|format|quality)=\\d+', replacement: '', flags: 'g' },
+    { pattern: '[?&]thumb(nail)?=', replacement: '', flags: 'g' }
   ]
 };
 
 function T(key) { return chrome.i18n.getMessage(key); }
 
 chrome.runtime.onInstalled.addListener(async () => {
-  const {originalImageRules} = await chrome.storage.sync.get('originalImageRules');
-  if (!originalImageRules) await chrome.storage.sync.set({originalImageRules: DEFAULT_RULES});
+  const { originalImageRules } = await chrome.storage.sync.get('originalImageRules');
+  if (!originalImageRules) await chrome.storage.sync.set({ originalImageRules: DEFAULT_RULES });
   createMenus();
 });
+
+/* 累加下载计数 */
+function incrementDownloadCount(count = 1) {
+  chrome.storage.local.get({ statistics: { today: 0, total: 0, lastDate: new Date().toDateString() } }, (r) => {
+    let stats = r.statistics;
+    const today = new Date().toDateString();
+    if (stats.lastDate !== today) {
+      stats.today = 0;
+      stats.lastDate = today;
+    }
+    stats.today += count;
+    stats.total += count;
+    chrome.storage.local.set({ statistics: stats });
+  });
+}
 
 async function createMenus() {
   await chrome.contextMenus.removeAll();
   /* 单图 */
-  chrome.contextMenus.create({id: 'downloadOriginalImage', title: T('ctxDownload'), contexts: ['image']});
-  chrome.contextMenus.create({id: 'viewOriginalImage',   title: T('ctxView'),   contexts: ['image']});
+  chrome.contextMenus.create({ id: 'downloadOriginalImage', title: T('ctxDownload'), contexts: ['image'] });
+  chrome.contextMenus.create({ id: 'viewOriginalImage', title: T('ctxView'), contexts: ['image'] });
   /* 批量主菜单 */
-  chrome.contextMenus.create({id: 'batchDownload', title: T('ctxBatch'), contexts: ['page']});
+  chrome.contextMenus.create({ id: 'batchDownload', title: T('ctxBatch'), contexts: ['page'] });
   /* 二级菜单：按域名文件夹保存 */
-  chrome.contextMenus.create({id: 'batchDomainDir', parentId: 'batchDownload', title: T('ctxDomain'), contexts: ['page']});
-  chrome.contextMenus.create({id: 'batchZip',       parentId: 'batchDownload', title: T('ctxZip'), contexts: ['page']});
+  chrome.contextMenus.create({ id: 'batchDomainDir', parentId: 'batchDownload', title: T('ctxDomain'), contexts: ['page'] });
+  chrome.contextMenus.create({ id: 'batchZip', parentId: 'batchDownload', title: T('ctxZip'), contexts: ['page'] });
 }
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'downloadOriginalImage') {
     const url = await getOriginalUrl(info.srcUrl, tab.url);
     const filename = generateFileName(url, 'single');
-    chrome.downloads.download({url, filename, saveAs: false}, (id) => {
+    chrome.downloads.download({ url, filename, saveAs: false }, (id) => {
       if (!chrome.runtime.lastError) writeHistory(url, filename);
+      incrementDownloadCount(1);
     });
   }
   if (info.menuItemId === 'viewOriginalImage') {
     const url = await getOriginalUrl(info.srcUrl, tab.url);
-    chrome.tabs.create({url, active: true});
+    chrome.tabs.create({ url, active: true });
   }
   if (info.menuItemId === 'batchZip') return batchDownload(tab, 'zip');
 });
@@ -67,12 +83,12 @@ function showNotification(msg) {
 
 /* 批量下载（含历史写入） */
 async function batchDownload(tab, mode) {
-  await chrome.scripting.executeScript({target: {tabId: tab.id}, files: ['content.js']}).catch(() => {});
-  const res = await chrome.tabs.sendMessage(tab.id, {action: 'getAllImages'});
+  await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] }).catch(() => { });
+  const res = await chrome.tabs.sendMessage(tab.id, { action: 'getAllImages' });
   if (!res || !res.images || !res.images.length) return;
 
   const domain = new URL(tab.url).hostname.replace(/^www\./, '');
-  const ts   = Date.now();
+  const ts = Date.now();
 
   /* === 互斥分支 === */
   if (mode === 'domain') {
@@ -83,8 +99,9 @@ async function batchDownload(tab, mode) {
       if (!url) continue;
       const ext = (url.match(/\.(\w{3,4})(?=\?|$)/) || [, 'jpg'])[1];
       const filename = `${domain}/image_${i}.${ext}`;
-      chrome.downloads.download({url, filename, saveAs: false}, (id) => {
+      chrome.downloads.download({ url, filename, saveAs: false }, (id) => {
         if (!chrome.runtime.lastError) writeHistory(url, filename);
+        incrementDownloadCount(1);
       });
       await sleep(300);
     }
@@ -101,16 +118,16 @@ async function batchDownload(tab, mode) {
     if (!url) continue;
     const ext = (url.match(/\.(\w{3,4})(?=\?|$)/) || [, 'jpg'])[1];
     try {
-      const blob = await (await fetch(url, {referrer: tab.url})).blob();
+      const blob = await (await fetch(url, { referrer: tab.url })).blob();
       folder.file(`image_${index}.${ext}`, blob);
-    } catch {}
+    } catch { }
     index++;
   }
-  const zipBlob = await zip.generateAsync({type: 'blob'});
+  const zipBlob = await zip.generateAsync({ type: 'blob' });
   const reader = new FileReader();
   reader.onloadend = () => {
     const filenameZip = `${domain}_${ts}.zip`;
-    chrome.downloads.download({url: reader.result, filename: filenameZip, saveAs: false}, (id) => {
+    chrome.downloads.download({ url: reader.result, filename: filenameZip, saveAs: false }, (id) => {
       if (!chrome.runtime.lastError) writeHistory(reader.result, filenameZip);
     });
   };
@@ -118,11 +135,11 @@ async function batchDownload(tab, mode) {
 }
 
 function writeHistory(url, filename) {
-  chrome.storage.local.get({downloadHistory: []}, (r) => {
+  chrome.storage.local.get({ downloadHistory: [] }, (r) => {
     const list = r.downloadHistory;
-    list.push({url, filename, timestamp: Date.now()});
+    list.push({ url, filename, timestamp: Date.now() });
     if (list.length > 50) list.shift();
-    chrome.storage.local.set({downloadHistory: list});
+    chrome.storage.local.set({ downloadHistory: list });
   });
 }
 
@@ -143,7 +160,7 @@ function generateFileName(url, mode) {
 }
 
 async function getOriginalUrl(imageUrl, pageUrl) {
-  const {originalImageRules} = await chrome.storage.sync.get('originalImageRules');
+  const { originalImageRules } = await chrome.storage.sync.get('originalImageRules');
   const rules = originalImageRules || DEFAULT_RULES;
   const domain = new URL(pageUrl).hostname.replace(/^www\./, '');
   const list = rules[domain] || rules['default'] || [];
