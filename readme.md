@@ -14,6 +14,16 @@
 - **右键菜单**：在图片右键菜单中添加“下载原图”选项，方便快速操作。
 - **通知提示**：下载完成后显示通知，支持播放提示音。
 
+## 安装
+
+您可以通过以下方式安装此扩展：
+
+- **Microsoft Edge 扩展商店**：
+  访问 [Edge 扩展商店页面](https://microsoftedge.microsoft.com/addons/detail/%E7%BD%91%E9%A1%B5%E5%9B%BE%E7%89%87%E4%B8%8B%E8%BD%BD%E5%99%A8/lkiimldmpbcjhccadacejlemoeebhbgp) 下载并安装扩展。
+
+> 如果您使用的是其他 Chromium 内核浏览器（如 Chrome），也可以通过加载未打包的扩展程序进行安装。
+
+
 ## 使用方法
 1. 安装扩展后，点击浏览器工具栏图标打开设置页面。
 2. 根据需要调整常规设置、规则设置和高级选项。
